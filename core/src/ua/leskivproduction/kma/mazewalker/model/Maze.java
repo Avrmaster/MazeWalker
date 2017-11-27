@@ -1,19 +1,24 @@
 package ua.leskivproduction.kma.mazewalker.model;
 
 import com.badlogic.gdx.graphics.Color;
+import ua.leskivproduction.kma.mazewalker.solvers.DFSolver;
+import ua.leskivproduction.kma.mazewalker.solvers.MazeSolver;
 
 import java.awt.*;
+import java.util.LinkedList;
+import java.util.List;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.floorMod;
+import static java.lang.Math.random;
+import static ua.leskivproduction.kma.mazewalker.utils.Lerper.lerp;
 
 public final class Maze {
     private final static Point START_POINT = new Point(0, 0);
 
-    private final Graph graph;
+    public final Graph graph;
     public final int width, height;
     private Color[][] colors;
-
-
 
     public class Objective {
         public final Point startPoint, endPoint;
@@ -47,6 +52,28 @@ public final class Maze {
     }
     private Objective objective;
 
+    public MazeSolver solver;
+
+    private List<Marker> markers = new LinkedList<>();
+    public class Marker {
+        public Point pos;
+        public float radius;
+        public float goalRadius;
+        public Color color;
+        private Marker(Point pos) {
+            this.pos = new Point(pos);
+        }
+        private Marker(int x, int y) {
+            this.pos = new Point(x, y);
+        }
+        public void update(float deltaTime) {
+            if (Math.abs(radius-goalRadius) > 0.01f)
+                radius = lerp(radius, goalRadius, 4*deltaTime);
+            else
+                radius = goalRadius;
+        }
+    }
+
     public Maze(int width, int height) {
         graph = new UndirectedGraph(width*height);
         this.width = width;
@@ -59,24 +86,73 @@ public final class Maze {
         }
     }
 
+    public void addMarker(int cellX, int cellY, Color color) {
+        addMarker(cellX, cellY, color, 1);
+    }
+
+    public void addMarker(int cellX, int cellY, Color color, float radius) {
+        removeAllMarkersAt(cellX, cellY);
+        Marker newMarker = new Marker(cellX, cellY);
+        newMarker.goalRadius = radius;
+        newMarker.color = color;
+        markers.add(newMarker);
+    }
+
+    public void removeLastMarker() {
+        if (markers.size() > 0)
+            markers.remove(markers.size()-1);
+    }
+
+    public void removeAllMarkersAt(Point p) {
+        removeAllMarkersAt(p.x, p.y);
+    }
+    public void removeAllMarkersAt(int cellX, int cellY) {
+        for (int i = markers.size()-1; i >= 0; i--) {
+            Marker m = markers.get(i);
+            if (m.pos.x == cellX && m.pos.y == cellY)
+                markers.remove(i);
+        }
+    }
+
+    public void clearMarkers() {
+        for(Marker m : markers)
+            m.goalRadius = 0;
+    }
+
+    public List<Marker> markers() {
+        return markers;
+    }
+
     public void setObjective(Point endPoint) {
         setObjective(START_POINT, endPoint);
     }
 
     public void setObjective(Point startPoint, Point endPoint) {
         objective = new Objective(startPoint, endPoint);
+        clearMarkers();
+        updateObjectiveMarkers();
+        solver = new DFSolver(this);
     }
 
-    public boolean hasObjective() {
-        return objective != null;
-    }
+    public void updateObjectiveMarkers() {
+        int startX = objective.startPoint.x;
+        int startY = objective.startPoint.y;
+        int endX = objective.endPoint.x;
+        int endY = objective.endPoint.y;
 
-    public boolean sameObjective(Objective another) {
-        return this.objective.equals(another);
+        removeAllMarkersAt(startX, startY);
+        removeAllMarkersAt(endX, endY);
+
+        addMarker(startX, startY, Color.BROWN);
+        addMarker(endX, endY, Color.GOLD);
     }
 
     public Objective getObjective() {
         return new Objective(this.objective);
+    }
+
+    public boolean hasObjective() {
+        return objective != null;
     }
 
     public boolean isOpened(int x1, int y1, int x2, int y2) {
@@ -108,8 +184,16 @@ public final class Maze {
         return colors[x][y];
     }
 
-    private int getCellV(int x, int y) {
+    public int getCellV(int x, int y) {
         return y*width + x;
+    }
+
+    public int getCellV(Point p) {
+        return getCellV(p.x, p.y);
+    }
+
+    public Point getCellPos(int V) {
+        return new Point(V%width, V/width);
     }
 
     private void checkBoundaries(int x, int y) {

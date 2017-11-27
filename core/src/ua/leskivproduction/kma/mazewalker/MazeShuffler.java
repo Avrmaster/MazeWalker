@@ -19,6 +19,10 @@ public final class MazeShuffler {
     private Stack<Point> shuffleStack;
 
     public MazeShuffler(Maze maze, float shuffleTime) {
+        this(maze, shuffleTime, true);
+    }
+
+    public MazeShuffler(Maze maze, float shuffleTime, boolean startFromZero) {
         if (maze.width*maze.height<2)
             throw new IllegalArgumentException("This maze cannot be shuffled! It's too small.");
         this.maze = maze;
@@ -27,7 +31,9 @@ public final class MazeShuffler {
         visited = new boolean[maze.width][maze.height];
 
         shuffleStack = new Stack<>();
-        shuffleStack.push(new Point(0, 0));
+        shuffleStack.push(startFromZero?
+                new Point(0, 0) :
+                new Point((int)(maze.width*Math.random()), (int)(maze.height*Math.random())));
     }
 
     private float time;

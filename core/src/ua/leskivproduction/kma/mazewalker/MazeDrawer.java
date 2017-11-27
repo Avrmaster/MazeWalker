@@ -5,33 +5,21 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static ua.leskivproduction.kma.mazewalker.utils.Lerper.*;
-import ua.leskivproduction.kma.mazewalker.model.Maze;
 
 import java.awt.*;
-import java.util.LinkedList;
 import java.util.List;
+
+import static ua.leskivproduction.kma.mazewalker.utils.Lerper.*;
+import ua.leskivproduction.kma.mazewalker.model.Maze;
+import ua.leskivproduction.kma.mazewalker.model.Maze.Marker;
+
+
 
 public final class MazeDrawer {
     private Maze maze;
-    private int x, y, width, height;
+    private float x, y, width, height;
     private ShapeRenderer shapeRenderer;
     private Color[][] actualColors;
-
-    List<Marker> markers = new LinkedList<>();
-    private class Marker {
-        float x, y;
-        float radius;
-        float goalRadius;
-        Color color;
-        Marker(float x, float y) {
-            this.x = x;
-            this.y = y;
-        }
-        void update(float deltaTime) {
-            radius = lerp(radius, goalRadius, deltaTime);
-        }
-    }
 
     public MazeDrawer(Maze maze) {
         this.maze = maze;
@@ -52,7 +40,6 @@ public final class MazeDrawer {
             throw new IllegalArgumentException("New maze must have same size!");
     }
 
-    Maze.Objective drawnObjective;
     public void draw(float deltaTime) {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(new Color(0.2f, 0.8f, 0.1f, 1));
@@ -82,30 +69,26 @@ public final class MazeDrawer {
         }
         shapeRenderer.end();
 
-        if (maze.hasObjective()) {
-            if (drawnObjective == null || !maze.sameObjective(drawnObjective)) {
-                drawnObjective = maze.getObjective();
-                clearMarkers();
-                addMarker(drawnObjective.startPoint.x, drawnObjective.startPoint.y, Color.BROWN);
-                addMarker(drawnObjective.endPoint.x, drawnObjective.endPoint.y, Color.GOLD);
-            }
-        } else {
-            clearMarkers();
-        }
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        List<Maze.Marker> markers = maze.markers();
         for (int i = markers.size()-1; i >= 0; i--) {
-            Marker m = markers.get(i);
+            Maze.Marker m = markers.get(i);
             m.update(deltaTime);
-            if (m.radius < 0.1f) {
+            if (m.radius < 0.05f && m.goalRadius < 0.05f) {
                 markers.remove(i);
             } else {
                 shapeRenderer.setColor(m.color);
-                shapeRenderer.circle(m.x, m.y, m.radius);
+                ellipse((m.pos.x+0.5f)*cellWidth, (m.pos.y+0.5f)*cellHeight,
+                        m.radius*cellWidth, m.radius*cellHeight);
             }
         }
         shapeRenderer.end();
 
+    }
+
+    private void ellipse(float centerX, float centerY, float width, float height) {
+        shapeRenderer.ellipse(centerX-width/2, centerY-height/2, width, height);
     }
 
     private void wall(float x1, float y1, float x2, float y2, float wallThickness) {
@@ -126,47 +109,47 @@ public final class MazeDrawer {
     }
 
     private float getCellWidth() {
-        return (float)width/maze.width;
+        return width/maze.width;
     }
 
     private float getCellHeight() {
-        return (float)height/maze.height;
+        return height/maze.height;
     }
 
-    public void addMarker(int cellX, int cellY, Color color) {
-        addMarker(cellX, cellY, color, max(getCellWidth(), getCellHeight())/2);
-    }
 
-    public void addMarker(int cellX, int cellY, Color color, float radius) {
-        Marker newMarker = new Marker((cellX+0.5f)*getCellWidth(), (cellY+0.5f)*getCellHeight());
-        newMarker.goalRadius = radius;
-        newMarker.color = color;
-        markers.add(newMarker);
-    }
-
-    public void clearMarkers() {
-        for(Marker m : markers)
-            m.goalRadius = 0;
-    }
-
-    public MazeDrawer setX(int x) {
+    public MazeDrawer setX(float x) {
         this.x = x;
         return this;
     }
 
-    public MazeDrawer setY(int y) {
+    public MazeDrawer setY(float y) {
         this.y = y;
         return this;
     }
 
-    public MazeDrawer setWidth(int width) {
+    public MazeDrawer setWidth(float width) {
         this.width = width;
         return this;
     }
 
-    public MazeDrawer setHeight(int height) {
+    public MazeDrawer setHeight(float height) {
         this.height = height;
         return this;
     }
 
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public float getHeight() {
+        return height;
+    }
 }
