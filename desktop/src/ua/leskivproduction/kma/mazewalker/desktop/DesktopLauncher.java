@@ -12,6 +12,9 @@ public class DesktopLauncher {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		config.useGL30 = true;
+		config.useHDPI = true;
+
 		config.width = screenSize.width*2/3;
 		config.height = screenSize.height*2/3;
 

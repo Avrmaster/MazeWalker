@@ -1,6 +1,5 @@
 package ua.leskivproduction.kma.mazewalker;
 
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.Color;
 
 import java.awt.*;
@@ -16,7 +15,6 @@ public final class MazeShuffler {
     private float shuffleTime;
     private int totalStepsCnt;
     private boolean visited[][];
-    private ShapeRenderer shapeRenderer;
 
     private Stack<Point> shuffleStack;
 
@@ -25,7 +23,6 @@ public final class MazeShuffler {
             throw new IllegalArgumentException("This maze cannot be shuffled! It's too small.");
         this.maze = maze;
         this.shuffleTime = shuffleTime;
-        shapeRenderer = new ShapeRenderer();
         totalStepsCnt = maze.width*maze.height;
         visited = new boolean[maze.width][maze.height];
 
@@ -36,6 +33,8 @@ public final class MazeShuffler {
     private float time;
     private Point curPoint;
     private int performedSteps;
+    private boolean cleared;
+
     public void update(float deltaTime) {
         time += deltaTime;
         int goalStepsCnt = Math.min(totalStepsCnt, (int)((time/shuffleTime)*totalStepsCnt));
@@ -48,7 +47,7 @@ public final class MazeShuffler {
                 int randInd = (int)(neighbours.size()*Math.random());
                 Point newPoint = neighbours.get(randInd);
                 shuffleStack.push(curPoint);
-                maze.setColor(curPoint.x, curPoint.y, Color.GREEN);
+                maze.setColor(curPoint.x, curPoint.y, new Color(0, (float)(0.8+Math.random()*0.2), 0, 1));
 
                 maze.open(curPoint.x, curPoint.y, newPoint.x, newPoint.y);
 
@@ -62,16 +61,32 @@ public final class MazeShuffler {
                 maze.setColor(curPoint.x, curPoint.y, Color.GREEN);
             }
         }
+
+        if (done() && !cleared) {
+            for (int i = 0; i < maze.width; i++) {
+                for (int j = 0; j < maze.height; j++) {
+                    maze.setColor(i, j, Color.BLACK);
+                }
+            }
+            cleared = true;
+            shuffleStack.clear();
+            resetObjective();
+        }
+
     }
 
-    public boolean isDone() {
+    public void resetObjective() {
+        maze.setObjective(new Point((int)(maze.width*Math.random()), (int)(maze.height*Math.random())));
+    }
+
+    public boolean done() {
         for (int i = 0; i < maze.width; i++) {
             for (int j = 0; j < maze.height; j++) {
                 if (!visited[i][j])
-                    return true;
+                    return false;
             }
         }
-        return false;
+        return true;
     }
 
     public List<Point> unvisitedNeighbours(Point p) {
