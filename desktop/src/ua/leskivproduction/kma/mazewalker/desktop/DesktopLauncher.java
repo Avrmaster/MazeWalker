@@ -14,6 +14,7 @@ public class DesktopLauncher {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		config.useGL30 = true;
 		config.useHDPI = true;
+		config.samples = 6;
 
 //		config.width = screenSize.width*3/4;
 //		config.height = screenSize.height*3/4;

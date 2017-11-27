@@ -15,9 +15,9 @@ import ua.leskivproduction.kma.mazewalker.solvers.DFSolver;
 import ua.leskivproduction.kma.mazewalker.utils.DummyInputProcessor;
 
 public class Main extends ApplicationAdapter {
-    private final int MAZE_WIDTH = 128;
-    private final int MAZE_HEIGHT = 72;
-    private final float SHUFFLE_TIME = 2f;
+    private final int MAZE_WIDTH = 100;
+    private final int MAZE_HEIGHT = MAZE_WIDTH*9/16;
+    private final float SHUFFLE_TIME = 4f;
     private final boolean AUTO_EPIC = true;
 
     private SpriteBatch spriteBatch;
@@ -139,19 +139,18 @@ public class Main extends ApplicationAdapter {
             float yOffset = mainFont.getCapHeight() + 3;
             float xOffset = yOffset * screenWidth / screenHeight;
 
-            mazeDrawer.setX(xOffset).setY(yOffset).setWidth(screenWidth - 2 * xOffset).setHeight(screenHeight - 2 * yOffset);
+            mazeDrawer.setX(xOffset).setY(yOffset)
+                    .setWidth(screenWidth - 2 * xOffset).setHeight(screenHeight - 2 * yOffset);
         }
     }
 
-    boolean epic_toggled = false;
+    private boolean epic_toggled = false;
 
     @Override
     public void render() {
         Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT |
+                (Gdx.graphics.getBufferFormat().coverageSampling?GL20.GL_COVERAGE_BUFFER_BIT_NV:0));
 
         if (!backgroundMusic.isPlaying())
             backgroundMusic.play();

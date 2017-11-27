@@ -62,7 +62,7 @@ public abstract class MazeSolver {
                 doneByNow = (int)(solution.size()*solutionDrawProgress/SOLUTION_DRAW_TIME);
 
             int added = 0;
-            for (; drawnPart < doneByNow && added < 70; drawnPart++, added++) {
+            for (; drawnPart < doneByNow && added < 50; drawnPart++, added++) {
                 Point p = solution.get(drawnPart);
                 maze.addMarker(p.x, p.y, Color.BLUE, 0.5f, true, false);
             }

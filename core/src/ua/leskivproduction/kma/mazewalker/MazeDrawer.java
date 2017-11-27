@@ -79,8 +79,10 @@ public final class MazeDrawer {
         float cellThickness = max(1f, cellWidth/8);
         for (int i = 0; i < maze.width; i++) {
             for (int j = 0; j < maze.height; j++) {
-                lerp(actualColors[i][j], maze.getColor(i, j), deltaTime);
+
+                lerp(actualColors[i][j], maze.getColor(i, j), deltaTime/2);
                 shapeRenderer.setColor(actualColors[i][j]);
+
                 shapeRenderer.rect(x+i*cellWidth, y+j*cellHeight, cellWidth, cellHeight);
 
                 shapeRenderer.setColor(0.4f, 0.4f, 0.3f, 1);

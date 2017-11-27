@@ -21,7 +21,7 @@ public final class Lerper {
     }
 
     public static void lerp(Color dest, Color start, Color goal, float progress) {
-        dest.r = lerp(start.r, goal.r, 5*progress);
+        dest.r = lerp(start.r, goal.r, progress);
         dest.g = lerp(start.g, goal.g, progress);
         dest.b = lerp(start.b, goal.b, progress);
         dest.a = lerp(start.a, goal.a, 5*progress);

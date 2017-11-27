@@ -3,9 +3,9 @@ package ua.leskivproduction.kma.mazewalker;
 import com.badlogic.gdx.graphics.Color;
 
 import java.awt.*;
-import java.util.LinkedList;
-import java.util.Stack;
+import java.util.*;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import ua.leskivproduction.kma.mazewalker.model.Maze;
 
@@ -16,7 +16,7 @@ public final class MazeShuffler {
     private int totalStepsCnt;
     private boolean visited[][];
 
-    private Stack<Point> shuffleStack;
+    private Deque<Point> shuffleStack;
 
     public MazeShuffler(Maze maze, float shuffleTime) {
         this(maze, shuffleTime, true);
@@ -30,7 +30,7 @@ public final class MazeShuffler {
         totalStepsCnt = maze.width*maze.height;
         visited = new boolean[maze.width][maze.height];
 
-        shuffleStack = new Stack<>();
+        shuffleStack = new ArrayDeque<>(maze.width*maze.height);
         shuffleStack.push(startFromZero?
                 new Point(0, 0) :
                 new Point((int)(maze.width*Math.random()), (int)(maze.height*Math.random())));
@@ -44,7 +44,8 @@ public final class MazeShuffler {
     public void update(float deltaTime) {
         time += deltaTime;
         int goalStepsCnt = Math.min(totalStepsCnt, (int)((time/shuffleTime)*totalStepsCnt));
-        while (performedSteps < goalStepsCnt && !shuffleStack.isEmpty()) {
+        int cyclesCnt = 0;
+        while (cyclesCnt++ < 50 && performedSteps < goalStepsCnt && !shuffleStack.isEmpty()) {
             if (curPoint == null)
                 curPoint = shuffleStack.pop();
 
@@ -52,6 +53,7 @@ public final class MazeShuffler {
             if (neighbours.size() > 0) {
                 int randInd = (int)(neighbours.size()*Math.random());
                 Point newPoint = neighbours.get(randInd);
+
                 shuffleStack.push(curPoint);
                 maze.setColor(curPoint.x, curPoint.y, new Color(0, (float)(0.8+Math.random()*0.2), 0, 1));
 
@@ -60,11 +62,10 @@ public final class MazeShuffler {
                 curPoint = newPoint;
                 visited[curPoint.x][curPoint.y] = true;
                 performedSteps++;
+                maze.setColor(curPoint.x, curPoint.y, Color.CORAL);
 
-                maze.setColor(curPoint.x, curPoint.y, Color.RED);
             } else {
                 curPoint = shuffleStack.pop();
-                maze.setColor(curPoint.x, curPoint.y, Color.GREEN);
             }
         }
 
@@ -97,7 +98,7 @@ public final class MazeShuffler {
 
     public List<Point> unvisitedNeighbours(Point p) {
         int x = p.x, y = p.y;
-        List<Point> pointList = new LinkedList<>();
+        List<Point> pointList = new ArrayList<>(4);
         for (int i = 0; i < 4; i++) {
             try {
                 switch (i) {
