@@ -4,16 +4,11 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import static java.lang.Math.max;
-import static java.lang.Math.min;
 
-import java.awt.*;
 import java.util.List;
 
 import static ua.leskivproduction.kma.mazewalker.utils.Lerper.*;
 import ua.leskivproduction.kma.mazewalker.model.Maze;
-import ua.leskivproduction.kma.mazewalker.model.Maze.Marker;
-
-
 
 public final class MazeDrawer {
     private Maze maze;
@@ -79,7 +74,7 @@ public final class MazeDrawer {
                 markers.remove(i);
             } else {
                 shapeRenderer.setColor(m.color);
-                ellipse((m.pos.x+0.5f)*cellWidth, (m.pos.y+0.5f)*cellHeight,
+                ellipse(x+(m.pos.x+0.5f)*cellWidth, y+(m.pos.y+0.5f)*cellHeight,
                         m.radius*cellWidth, m.radius*cellHeight);
             }
         }
@@ -115,7 +110,6 @@ public final class MazeDrawer {
     private float getCellHeight() {
         return height/maze.height;
     }
-
 
     public MazeDrawer setX(float x) {
         this.x = x;

@@ -14,7 +14,7 @@ import ua.leskivproduction.kma.mazewalker.utils.DummyInputProcessor;
 public class Main extends ApplicationAdapter {
 	private final int MAZE_WIDTH = 64;
 	private final int MAZE_HEIGHT = 36;
-	private final float SHUFFLE_TIME = 2f;
+	private final float SHUFFLE_TIME = 12f;
 
 	private SpriteBatch spriteBatch;
 	private Maze maze;
@@ -75,7 +75,7 @@ public class Main extends ApplicationAdapter {
 			mazeDrawer = new MazeDrawer(maze);
 			int screenWidth = Gdx.graphics.getWidth();
 			int screenHeight = Gdx.graphics.getHeight();
-			mazeDrawer.setX(0).setY(0).setWidth(screenWidth).setHeight(screenHeight);
+			mazeDrawer.setX(100).setY(100).setWidth(screenWidth-200).setHeight(screenHeight-200);
 		}
 	}
 
@@ -105,7 +105,7 @@ public class Main extends ApplicationAdapter {
 
 		spriteBatch.begin();
 		if (maze.hasObjective() && maze.solver.done()) {
-			
+
 			if (maze.solver.solvable()) {
 				mainFont.draw(spriteBatch, "Path length: "+maze.solver.getSolution().size(),
 						0, mainFont.getCapHeight());
