@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import ua.leskivproduction.kma.mazewalker.model.Maze;
+import ua.leskivproduction.kma.mazewalker.solvers.BFSolver;
+import ua.leskivproduction.kma.mazewalker.solvers.DFSolver;
 import ua.leskivproduction.kma.mazewalker.utils.DummyInputProcessor;
 
 public class Main extends ApplicationAdapter {
@@ -57,12 +59,12 @@ public class Main extends ApplicationAdapter {
 	}
 
 	private void createNewMaze() {
-		initMazeSystem(new Maze(MAZE_WIDTH, MAZE_HEIGHT));
+		initMazeSystem(new Maze(MAZE_WIDTH, MAZE_HEIGHT, DFSolver::new));
 	}
 
 	private void initMazeSystem(Maze maze) {
 		this.maze = maze;
-		mazeShuffler = new MazeShuffler(maze, SHUFFLE_TIME, false);
+		mazeShuffler = new MazeShuffler(maze, SHUFFLE_TIME, true);
 
 		try {
 			mazeDrawer.setMaze(maze);

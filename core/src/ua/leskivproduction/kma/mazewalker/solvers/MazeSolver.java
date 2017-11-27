@@ -1,20 +1,31 @@
 package ua.leskivproduction.kma.mazewalker.solvers;
 
 import com.badlogic.gdx.graphics.Color;
+import ua.leskivproduction.kma.mazewalker.model.Graph;
 import ua.leskivproduction.kma.mazewalker.model.Maze;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.awt.Point;
 
 public abstract class MazeSolver {
-    protected final static float DEFAULT_STEP_TIME = 0.002f;
-    private final float STEP_TIME;
+    protected final static float STEP_TIME = 0.01f;
     private final static float SOLUTION_DRAW_TIME = 1;
 
     protected Maze maze;
-    public MazeSolver(Maze maze, final float step_time) {
+    public MazeSolver(Maze maze) {
         this.maze = maze;
-        this.STEP_TIME = step_time;
+
+        mazeGraph = maze.graph;
+        objective = maze.getObjective();
+
+        initialV = currentV = maze.getCellV(objective.startPoint);
+        goalV = maze.getCellV(objective.endPoint);
+        goalV = -1;
+
+        visited = new boolean[mazeGraph.V];
+        paths = new int[mazeGraph.V];
+
     }
 
     protected boolean solvable = true;
@@ -25,6 +36,13 @@ public abstract class MazeSolver {
     private boolean solutionDrawn;
     private float solutionDrawProgress;
     private int drawnPart;
+
+    protected Maze.Objective objective;
+    protected Graph mazeGraph;
+
+    protected int initialV, currentV, goalV;
+    protected boolean[] visited;
+    protected int[] paths;
 
     public void update(float deltaTime) {
         time += deltaTime;
@@ -47,7 +65,7 @@ public abstract class MazeSolver {
 
             for (; drawnPart < doneByNow; drawnPart++) {
                 Point p = solution.get(drawnPart);
-                maze.addMarker(p.x, p.y, Color.BLUE, 0.5f);
+                maze.addMarker(p.x, p.y, Color.BLUE, 0.5f, true);
             }
 
             if (drawnPart >= solution.size()) {
@@ -63,7 +81,61 @@ public abstract class MazeSolver {
         return solution;
     }
 
-    protected abstract boolean performStep();
+    protected boolean performStep() {
+        if (currentV == goalV)
+            return true;
+
+        int newV = -1;
+        for (int adj : mazeGraph.edges(currentV)) {
+            if (!visited[adj]) {
+                newV = adj;
+                break;
+            }
+        }
+
+        Point pos = maze.getCellPos(currentV);
+
+        if (newV != -1) {
+            paths[newV] = currentV;
+            currentV = newV;
+            insertVertex(newV);
+
+            if (!pos.equals(objective.startPoint) && !pos.equals(objective.endPoint))
+                maze.addMarker(pos.x, pos.y, Color.CHARTREUSE, 0.4f, false);
+        } else {
+            if (!pos.equals(objective.startPoint) && !pos.equals(objective.endPoint))
+                maze.addMarker(pos.x, pos.y, Color.RED, 0.6f, false);
+
+            if (isCollectionEmpty()) {
+                solvable = false;
+                return true; //done
+            }
+            currentV = removeFirst();
+        }
+
+        visited[currentV] = true;
+
+        if (currentV == goalV) {
+            maze.clearMarkers();
+            maze.updateObjectiveMarkers();
+
+            solution = new ArrayList<>();
+            int V = currentV;
+            while (true) {
+                V = paths[V];
+                if (V != initialV)
+                    solution.add(maze.getCellPos(V));
+                else
+                    break;
+            }
+        }
+
+        return currentV == goalV;
+    }
+
+    protected abstract void insertVertex(int newV);
+    protected abstract boolean isCollectionEmpty();
+    protected abstract int removeFirst();
 
     public boolean done() {
         return done;

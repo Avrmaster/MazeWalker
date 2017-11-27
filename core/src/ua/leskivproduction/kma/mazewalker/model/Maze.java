@@ -2,8 +2,8 @@ package ua.leskivproduction.kma.mazewalker.model;
 
 import com.badlogic.gdx.graphics.Color;
 import ua.leskivproduction.kma.mazewalker.solvers.BFSolver;
-import ua.leskivproduction.kma.mazewalker.solvers.DFSolver;
 import ua.leskivproduction.kma.mazewalker.solvers.MazeSolver;
+import ua.leskivproduction.kma.mazewalker.solvers.SolverFactory;
 
 import java.awt.*;
 import java.util.LinkedList;
@@ -11,11 +11,11 @@ import java.util.List;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.floorMod;
-import static java.lang.Math.random;
 import static ua.leskivproduction.kma.mazewalker.utils.Lerper.lerp;
 
 public final class Maze {
     private final static Point START_POINT = new Point(0, 0);
+    public final static int MAX_MARKERS_COUNT = 900;
 
     public final Graph graph;
     public final int width, height;
@@ -57,6 +57,7 @@ public final class Maze {
 
     private List<Marker> markers = new LinkedList<>();
     public class Marker {
+        public boolean removable;
         public Point pos;
         public float radius;
         public float goalRadius;
@@ -75,7 +76,11 @@ public final class Maze {
         }
     }
 
-    public Maze(int width, int height) {
+    private SolverFactory solverFactory;
+
+    public Maze(int width, int height, SolverFactory solverFactory) {
+        this.solverFactory = solverFactory;
+
         graph = new UndirectedGraph(width*height);
         this.width = width;
         this.height = height;
@@ -87,16 +92,24 @@ public final class Maze {
         }
     }
 
-    public void addMarker(int cellX, int cellY, Color color) {
-        addMarker(cellX, cellY, color, 1);
+    public void addMarker(int cellX, int cellY, Color color, boolean important) {
+        addMarker(cellX, cellY, color, 1, important);
     }
 
-    public void addMarker(int cellX, int cellY, Color color, float radius) {
+    public void addMarker(int cellX, int cellY, Color color, float radius, boolean important) {
         removeAllMarkersAt(cellX, cellY);
         Marker newMarker = new Marker(cellX, cellY);
         newMarker.goalRadius = radius;
         newMarker.color = color;
+        newMarker.removable = !important;
         markers.add(newMarker);
+
+        int i = 0;
+        while (markers.size() > MAX_MARKERS_COUNT && i < markers.size()) {
+            if (markers.get(i).removable) {
+                markers.remove(i);
+            } else i++;
+        }
     }
 
     public void removeLastMarker() {
@@ -132,8 +145,7 @@ public final class Maze {
         objective = new Objective(startPoint, endPoint);
         clearMarkers();
         updateObjectiveMarkers();
-//        solver = new DFSolver(this);
-        solver = new BFSolver(this);
+        solver = solverFactory.genSolver(this);
     }
 
     public void updateObjectiveMarkers() {
@@ -145,8 +157,8 @@ public final class Maze {
         removeAllMarkersAt(startX, startY);
         removeAllMarkersAt(endX, endY);
 
-        addMarker(startX, startY, Color.BROWN);
-        addMarker(endX, endY, Color.GOLD);
+        addMarker(startX, startY, Color.BROWN, true);
+        addMarker(endX, endY, Color.GOLD, true);
     }
 
     public Objective getObjective() {
