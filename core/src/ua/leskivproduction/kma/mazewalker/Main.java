@@ -15,9 +15,9 @@ import ua.leskivproduction.kma.mazewalker.solvers.DFSolver;
 import ua.leskivproduction.kma.mazewalker.utils.DummyInputProcessor;
 
 public class Main extends ApplicationAdapter {
-    private final int MAZE_WIDTH = 100;
+    private final int MAZE_WIDTH = 80;
     private final int MAZE_HEIGHT = MAZE_WIDTH*9/16;
-    private final float SHUFFLE_TIME = 4f;
+    private final float SHUFFLE_TIME = 12f;
     private final boolean AUTO_EPIC = true;
 
     private SpriteBatch spriteBatch;

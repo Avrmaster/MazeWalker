@@ -57,6 +57,8 @@ public final class MazeShuffler {
                 shuffleStack.push(curPoint);
                 maze.setColor(curPoint.x, curPoint.y, new Color(0, (float)(0.8+Math.random()*0.2), 0, 1));
 
+//                if (Math.random() > 0.01) {
+//                }
                 maze.open(curPoint.x, curPoint.y, newPoint.x, newPoint.y);
 
                 curPoint = newPoint;
