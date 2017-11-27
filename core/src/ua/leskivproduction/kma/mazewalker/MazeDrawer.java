@@ -42,7 +42,7 @@ public final class MazeDrawer {
         rect(x, y, width, height, 3);
         float cellWidth = getCellWidth();
         float cellHeight = getCellHeight();
-        float cellThickness = max(1f, cellWidth/20);
+        float cellThickness = max(1f, cellWidth/8);
         for (int i = 0; i < maze.width; i++) {
             for (int j = 0; j < maze.height; j++) {
                 lerp(actualColors[i][j], maze.getColor(i, j), deltaTime);
@@ -91,9 +91,11 @@ public final class MazeDrawer {
         float cellHeight = getCellHeight();
 
         if (x1 == x2)
-            shapeRenderer.rect(x+x1*cellWidth, y+max(y1, y2)*cellHeight, cellWidth, wallThickness);
+            shapeRenderer.rect(x+x1*cellWidth, y+max(y1, y2)*cellHeight,
+                    cellWidth, wallThickness);
         else if (y1 == y2)
-            shapeRenderer.rect(x+max(x1, x2)*cellWidth, y+y1*cellHeight, wallThickness, cellHeight);
+            shapeRenderer.rect(x+max(x1, x2)*cellWidth, y+y1*cellHeight,
+                    wallThickness, cellHeight);
     }
 
     private void rect(float x, float y, float width, float height, float lineWidth) {

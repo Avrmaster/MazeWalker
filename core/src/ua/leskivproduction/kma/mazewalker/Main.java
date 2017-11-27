@@ -12,9 +12,9 @@ import ua.leskivproduction.kma.mazewalker.model.Maze;
 import ua.leskivproduction.kma.mazewalker.utils.DummyInputProcessor;
 
 public class Main extends ApplicationAdapter {
-	private final int MAZE_WIDTH = 64;
-	private final int MAZE_HEIGHT = 36;
-	private final float SHUFFLE_TIME = 12f;
+	private final int MAZE_WIDTH = 32;
+	private final int MAZE_HEIGHT = 18;
+	private final float SHUFFLE_TIME = 2f;
 
 	private SpriteBatch spriteBatch;
 	private Maze maze;
@@ -22,16 +22,11 @@ public class Main extends ApplicationAdapter {
 	private MazeShuffler mazeShuffler;
 	private BitmapFont mainFont;
 
-	Texture img;
-
 	@Override
 	public void create () {
-		createNewMaze();
-
 		spriteBatch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
 		mainFont = genFont("American Captain.ttf", Gdx.graphics.getHeight()/10, Color.WHITE);
-
+		createNewMaze();
 
 		Gdx.input.setInputProcessor(new DummyInputProcessor() {
 			@Override
@@ -75,7 +70,11 @@ public class Main extends ApplicationAdapter {
 			mazeDrawer = new MazeDrawer(maze);
 			int screenWidth = Gdx.graphics.getWidth();
 			int screenHeight = Gdx.graphics.getHeight();
-			mazeDrawer.setX(100).setY(100).setWidth(screenWidth-200).setHeight(screenHeight-200);
+
+			float yOffset = mainFont.getCapHeight()+3;
+			float xOffset = yOffset*screenWidth/screenHeight;
+
+			mazeDrawer.setX(xOffset).setY(yOffset).setWidth(screenWidth-2*xOffset).setHeight(screenHeight-2*yOffset);
 		}
 	}
 
@@ -84,8 +83,8 @@ public class Main extends ApplicationAdapter {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-//		Gdx.gl.glEnable(GL20.GL_BLEND);
-//		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		Gdx.gl.glEnable(GL20.GL_BLEND);
+		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
 		float deltaTime = Gdx.graphics.getDeltaTime();
 		if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
@@ -96,7 +95,7 @@ public class Main extends ApplicationAdapter {
 			mazeShuffler.update(deltaTime);
 		} else {
 			if (maze.hasObjective() &&
-					!maze.solver.done()) {
+					(!maze.solver.done() || !(maze.solver.isSolutionDrawn()))) {
 				maze.solver.update(deltaTime);
 			}
 		}
@@ -107,7 +106,8 @@ public class Main extends ApplicationAdapter {
 		if (maze.hasObjective() && maze.solver.done()) {
 
 			if (maze.solver.solvable()) {
-				mainFont.draw(spriteBatch, "Path length: "+maze.solver.getSolution().size(),
+				mainFont.draw(spriteBatch, "Path length ( "+maze.solver.getClass().getSimpleName()+"): "
+								+ maze.solver.getSolution().size(),
 						0, mainFont.getCapHeight());
 			} else {
 				mainFont.draw(spriteBatch, "Not solvable!", 0, mainFont.getCapHeight());

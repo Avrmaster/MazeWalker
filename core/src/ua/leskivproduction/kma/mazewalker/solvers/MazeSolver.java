@@ -7,8 +7,9 @@ import java.util.List;
 import java.awt.Point;
 
 public abstract class MazeSolver {
-    protected final static float DEFAULT_STEP_TIME = 0.01f;
+    protected final static float DEFAULT_STEP_TIME = 0.002f;
     private final float STEP_TIME;
+    private final static float SOLUTION_DRAW_TIME = 1;
 
     protected Maze maze;
     public MazeSolver(Maze maze, final float step_time) {
@@ -20,7 +21,11 @@ public abstract class MazeSolver {
     protected int stepsPerformed;
     protected boolean done;
     protected float time;
-    protected boolean solutionDrawn;
+
+    private boolean solutionDrawn;
+    private float solutionDrawProgress;
+    private int drawnPart;
+
     public void update(float deltaTime) {
         time += deltaTime;
 
@@ -31,28 +36,41 @@ public abstract class MazeSolver {
         }
 
         if (done && solvable && !solutionDrawn) {
-            maze.clearMarkers();
-            maze.updateObjectiveMarkers();
-            new Thread(() -> {
-                for (Point p : getSolution()) {
-                    maze.addMarker(p.x, p.y, Color.BLUE, 0.5f);
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
+            List<Point> solution = maze.solver.getSolution();
+            solutionDrawProgress += deltaTime;
+            int doneByNow;
 
-                    }
-                }
+            if (solutionDrawProgress > SOLUTION_DRAW_TIME)
+                doneByNow = solution.size();
+            else
+                doneByNow = (int)(solution.size()*solutionDrawProgress/SOLUTION_DRAW_TIME);
+
+            for (; drawnPart < doneByNow; drawnPart++) {
+                Point p = solution.get(drawnPart);
+                maze.addMarker(p.x, p.y, Color.BLUE, 0.5f);
+            }
+
+            if (drawnPart >= solution.size()) {
+                solutionDrawProgress = 0;
+                drawnPart = 0;
                 solutionDrawn = true;
-            }).start();
+            }
         }
     }
 
-    public abstract List<Point> getSolution();
+    protected List<Point> solution;
+    public List<Point> getSolution() {
+        return solution;
+    }
 
     protected abstract boolean performStep();
 
     public boolean done() {
         return done;
+    }
+
+    public boolean isSolutionDrawn() {
+        return solutionDrawn;
     }
 
     public boolean solvable() {

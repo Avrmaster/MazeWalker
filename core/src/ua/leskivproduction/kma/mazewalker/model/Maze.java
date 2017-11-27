@@ -1,6 +1,7 @@
 package ua.leskivproduction.kma.mazewalker.model;
 
 import com.badlogic.gdx.graphics.Color;
+import ua.leskivproduction.kma.mazewalker.solvers.BFSolver;
 import ua.leskivproduction.kma.mazewalker.solvers.DFSolver;
 import ua.leskivproduction.kma.mazewalker.solvers.MazeSolver;
 
@@ -131,7 +132,8 @@ public final class Maze {
         objective = new Objective(startPoint, endPoint);
         clearMarkers();
         updateObjectiveMarkers();
-        solver = new DFSolver(this);
+//        solver = new DFSolver(this);
+        solver = new BFSolver(this);
     }
 
     public void updateObjectiveMarkers() {

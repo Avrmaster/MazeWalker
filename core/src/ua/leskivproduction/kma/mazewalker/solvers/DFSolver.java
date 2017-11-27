@@ -5,8 +5,8 @@ import ua.leskivproduction.kma.mazewalker.model.Graph;
 import ua.leskivproduction.kma.mazewalker.model.Maze;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.LinkedList;
 import java.util.Stack;
 
 
@@ -35,6 +35,7 @@ public final class DFSolver extends MazeSolver {
 
         verticesStack = new Stack<>();
         verticesStack.push(initialV);
+        visited[initialV] = true;
     }
 
     @Override
@@ -60,35 +61,34 @@ public final class DFSolver extends MazeSolver {
             if (!pos.equals(objective.startPoint) && !pos.equals(objective.endPoint))
                 maze.addMarker(pos.x, pos.y, Color.CHARTREUSE, 0.4f);
         } else {
+            if (!pos.equals(objective.startPoint) && !pos.equals(objective.endPoint))
+                maze.addMarker(pos.x, pos.y, Color.RED, 0.6f);
+
             if (verticesStack.isEmpty()) {
                 solvable = false;
                 return true; //done
             }
             currentV = verticesStack.pop();
-
-            if (!pos.equals(objective.startPoint) && !pos.equals(objective.endPoint))
-                maze.addMarker(pos.x, pos.y, Color.RED, 0.6f);
         }
 
         visited[currentV] = true;
 
         if (currentV == goalV) {
-            solution = new LinkedList<>();
+            maze.clearMarkers();
+            maze.updateObjectiveMarkers();
+
+            solution = new ArrayList<>();
             int V = currentV;
-            while (V != initialV) {
-                solution.add(maze.getCellPos(V));
+            while (true) {
                 V = paths[V];
+                if (V != initialV)
+                    solution.add(maze.getCellPos(V));
+                else
+                    break;
             }
         }
 
         return currentV == goalV;
     }
-
-    private List<Point> solution;
-    public List<Point> getSolution() {
-        return solution;
-    }
-
-
 
 }
