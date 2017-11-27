@@ -19,18 +19,17 @@ public class Main extends ApplicationAdapter {
 		int screenWidth = Gdx.graphics.getWidth();
 		int screenHeight = Gdx.graphics.getHeight();
 
-		maze = new Maze(16, 9);
+		maze = new Maze(160, 90);
 		mazeDrawer = new MazeDrawer(maze);
 		mazeDrawer.setX(screenWidth/6).setY(screenHeight/6).setWidth(screenWidth*2/3).setHeight(screenHeight*2/3);
 
-		mazeShuffler = new MazeShuffler(maze, 10);
+		mazeShuffler = new MazeShuffler(maze, 20);
 	}
 
 	@Override
 	public void render () {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
 
 		mazeShuffler.update(Gdx.graphics.getDeltaTime());
 		mazeDrawer.draw(batch);

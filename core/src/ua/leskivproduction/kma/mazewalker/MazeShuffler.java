@@ -29,9 +29,8 @@ public final class MazeShuffler {
         totalStepsCnt = maze.width*maze.height;
         visited = new boolean[maze.width][maze.height];
 
-        curPoint = new Point(0, 0);
-        visited[curPoint.x][curPoint.y] = true;
         shuffleStack = new Stack<>();
+        shuffleStack.push(new Point(0, 0));
     }
 
     private float time;
@@ -40,7 +39,9 @@ public final class MazeShuffler {
     public void update(float deltaTime) {
         time += deltaTime;
         int goalStepsCnt = Math.min(totalStepsCnt, (int)((time/shuffleTime)*totalStepsCnt));
-        while (performedSteps < goalStepsCnt) {
+        while (performedSteps < goalStepsCnt && !shuffleStack.isEmpty()) {
+            if (curPoint == null)
+                curPoint = shuffleStack.pop();
 
             List<Point> neighbours = unvisitedNeighbours(curPoint);
             if (neighbours.size() > 0) {
@@ -58,9 +59,19 @@ public final class MazeShuffler {
                 maze.setColor(curPoint.x, curPoint.y, Color.RED);
             } else {
                 curPoint = shuffleStack.pop();
-                System.out.println(curPoint);
+                maze.setColor(curPoint.x, curPoint.y, Color.GREEN);
             }
         }
+    }
+
+    public boolean isDone() {
+        for (int i = 0; i < maze.width; i++) {
+            for (int j = 0; j < maze.height; j++) {
+                if (!visited[i][j])
+                    return true;
+            }
+        }
+        return false;
     }
 
     public List<Point> unvisitedNeighbours(Point p) {
@@ -89,16 +100,6 @@ public final class MazeShuffler {
             } catch (IndexOutOfBoundsException e) {}
         }
         return pointList;
-    }
-
-    private boolean hasUnvisited() {
-        for (int i = 0; i < maze.width; i++) {
-            for (int j = 0; j < maze.height; j++) {
-                if (!visited[i][j])
-                    return true;
-            }
-        }
-        return false;
     }
 
 }
