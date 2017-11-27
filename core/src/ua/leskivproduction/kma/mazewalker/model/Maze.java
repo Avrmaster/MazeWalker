@@ -104,11 +104,12 @@ public final class Maze {
         newMarker.removable = !important;
         markers.add(newMarker);
 
-        int i = 0;
-        while (markers.size() > MAX_MARKERS_COUNT && i < markers.size()) {
+        int toRemoveCnt = markers.size() - MAX_MARKERS_COUNT;
+        for (int i = 0; toRemoveCnt > 0 && i < markers.size(); i++) {
             if (markers.get(i).removable) {
-                markers.remove(i);
-            } else i++;
+                markers.get(i).goalRadius = 0; //it'll be removed when minimized
+                toRemoveCnt--;
+            }
         }
     }
 
@@ -133,6 +134,14 @@ public final class Maze {
             m.goalRadius = 0;
     }
 
+    public void clearCellsColors() {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                colors[i][j].set(0);
+            }
+        }
+    }
+
     public List<Marker> markers() {
         return markers;
     }
@@ -143,9 +152,13 @@ public final class Maze {
 
     public void setObjective(Point startPoint, Point endPoint) {
         objective = new Objective(startPoint, endPoint);
+        solveWith(solverFactory);
+    }
+
+    public void solveWith(SolverFactory factory) {
         clearMarkers();
         updateObjectiveMarkers();
-        solver = solverFactory.genSolver(this);
+        solver = factory.genSolver(this);
     }
 
     public void updateObjectiveMarkers() {

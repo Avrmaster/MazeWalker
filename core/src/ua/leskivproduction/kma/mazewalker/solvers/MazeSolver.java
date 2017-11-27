@@ -9,7 +9,7 @@ import java.util.List;
 import java.awt.Point;
 
 public abstract class MazeSolver {
-    protected final static float STEP_TIME = 0.005f;
+    protected final static float STEP_TIME = 0.003f;
     private final static float SOLUTION_DRAW_TIME = 1;
 
     protected Maze maze;
@@ -21,11 +21,11 @@ public abstract class MazeSolver {
 
         initialV = currentV = maze.getCellV(objective.startPoint);
         goalV = maze.getCellV(objective.endPoint);
-//        goalV = -1;
 
         visited = new boolean[mazeGraph.V];
         paths = new int[mazeGraph.V];
 
+        maze.clearCellsColors();
     }
 
     protected boolean solvable = true;
@@ -88,7 +88,6 @@ public abstract class MazeSolver {
             if (!pos.equals(objective.startPoint) && !pos.equals(objective.endPoint))
                 maze.addMarker(pos.x, pos.y, Color.CHARTREUSE, 0.4f, false);
             visited[currentV] = true;
-//            maze.setColor(pos.x, pos.y, new Color(0.1f, 0.1f, 0.6f, 1));
         }
 
         spawn();
@@ -101,6 +100,7 @@ public abstract class MazeSolver {
         currentV = removeFirst();
 
         if (currentV == goalV) {
+            //solution found
             maze.clearMarkers();
             maze.updateObjectiveMarkers();
 
@@ -113,6 +113,9 @@ public abstract class MazeSolver {
                 else
                     break;
             }
+
+            maze.setColor(10, 10, Color.ORANGE);
+
         }
 
         return currentV == goalV;

@@ -76,12 +76,12 @@ public final class MazeShuffler {
             }
             cleared = true;
             shuffleStack.clear();
-            resetObjective();
+            newObjective();
         }
 
     }
 
-    public void resetObjective() {
+    public void newObjective() {
         maze.setObjective(new Point((int)(maze.width*Math.random()), (int)(maze.height*Math.random())));
     }
 
