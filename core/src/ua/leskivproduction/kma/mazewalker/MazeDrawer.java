@@ -67,14 +67,9 @@ public final class MazeDrawer {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         List<Maze.Marker> markers = maze.markers();
-        boolean shouldUpdate = markers.size() < Maze.MAX_MARKERS_COUNT;
         for (int i = markers.size()-1; i >= 0; i--) {
             Maze.Marker m = markers.get(i);
-            if (shouldUpdate)
-                m.update(deltaTime);
-            else
-                m.radius = m.goalRadius;
-
+            m.update(deltaTime);
             if (m.radius < 0.05f && m.goalRadius < 0.05f) {
                 markers.remove(i);
             } else {

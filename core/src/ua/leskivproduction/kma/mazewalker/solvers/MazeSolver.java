@@ -9,7 +9,7 @@ import java.util.List;
 import java.awt.Point;
 
 public abstract class MazeSolver {
-    protected final static float STEP_TIME = 0.01f;
+    protected final static float STEP_TIME = 0.005f;
     private final static float SOLUTION_DRAW_TIME = 1;
 
     protected Maze maze;
@@ -21,7 +21,7 @@ public abstract class MazeSolver {
 
         initialV = currentV = maze.getCellV(objective.startPoint);
         goalV = maze.getCellV(objective.endPoint);
-        goalV = -1;
+//        goalV = -1;
 
         visited = new boolean[mazeGraph.V];
         paths = new int[mazeGraph.V];
@@ -82,38 +82,23 @@ public abstract class MazeSolver {
     }
 
     protected boolean performStep() {
-        if (currentV == goalV)
-            return true;
-
-        int newV = -1;
-        for (int adj : mazeGraph.edges(currentV)) {
-            if (!visited[adj]) {
-                newV = adj;
-                break;
-            }
-        }
-
         Point pos = maze.getCellPos(currentV);
 
-        if (newV != -1) {
-            paths[newV] = currentV;
-            currentV = newV;
-            insertVertex(newV);
-
+        if (!visited[currentV]) {
             if (!pos.equals(objective.startPoint) && !pos.equals(objective.endPoint))
                 maze.addMarker(pos.x, pos.y, Color.CHARTREUSE, 0.4f, false);
-        } else {
-            if (!pos.equals(objective.startPoint) && !pos.equals(objective.endPoint))
-                maze.addMarker(pos.x, pos.y, Color.RED, 0.6f, false);
-
-            if (isCollectionEmpty()) {
-                solvable = false;
-                return true; //done
-            }
-            currentV = removeFirst();
+            visited[currentV] = true;
+//            maze.setColor(pos.x, pos.y, new Color(0.1f, 0.1f, 0.6f, 1));
         }
 
-        visited[currentV] = true;
+        spawn();
+
+        if (isCollectionEmpty()) {
+            solvable = false;
+            return true; //done
+        }
+
+        currentV = removeFirst();
 
         if (currentV == goalV) {
             maze.clearMarkers();
@@ -133,8 +118,8 @@ public abstract class MazeSolver {
         return currentV == goalV;
     }
 
-    protected abstract void insertVertex(int newV);
     protected abstract boolean isCollectionEmpty();
+    protected abstract void spawn();
     protected abstract int removeFirst();
 
     public boolean done() {

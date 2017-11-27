@@ -187,13 +187,6 @@ public final class Maze {
         colors[x][y] = color;
     }
 
-    public void setColor(int x, int y, float r, float g, float b, float a) {
-        colors[x][y].a = a;
-        colors[x][y].r = r;
-        colors[x][y].g = g;
-        colors[x][y].b = b;
-    }
-
     public Color getColor(int x, int y) {
         return colors[x][y];
     }

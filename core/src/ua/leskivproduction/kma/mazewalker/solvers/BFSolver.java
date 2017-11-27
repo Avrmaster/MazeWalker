@@ -14,17 +14,21 @@ public class BFSolver extends MazeSolver {
         visited[initialV] = true;
         verticesQueue = new ConcurrentLinkedQueue<>();
         verticesQueue.add(initialV);
-
-    }
-
-    @Override
-    protected void insertVertex(int newV) {
-        verticesQueue.add(newV);
     }
 
     @Override
     protected boolean isCollectionEmpty() {
         return verticesQueue.isEmpty();
+    }
+
+    @Override
+    protected void spawn() {
+        for (int adj : mazeGraph.edges(currentV)) {
+            if (!visited[adj]) {
+                verticesQueue.add(adj);
+                paths[adj] = currentV;
+            }
+        }
     }
 
     @Override

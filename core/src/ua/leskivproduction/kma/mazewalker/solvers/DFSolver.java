@@ -16,13 +16,18 @@ public final class DFSolver extends MazeSolver {
     }
 
     @Override
-    protected void insertVertex(int newV) {
-        verticesStack.push(newV);
+    protected boolean isCollectionEmpty() {
+        return verticesStack.isEmpty();
     }
 
     @Override
-    protected boolean isCollectionEmpty() {
-        return verticesStack.isEmpty();
+    protected void spawn() {
+        for (int adj : mazeGraph.edges(currentV)) {
+            if (!visited[adj]) {
+                verticesStack.push(adj);
+                paths[adj] = currentV;
+            }
+        }
     }
 
     @Override

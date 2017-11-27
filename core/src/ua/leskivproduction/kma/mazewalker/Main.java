@@ -14,9 +14,9 @@ import ua.leskivproduction.kma.mazewalker.solvers.DFSolver;
 import ua.leskivproduction.kma.mazewalker.utils.DummyInputProcessor;
 
 public class Main extends ApplicationAdapter {
-	private final int MAZE_WIDTH = 32;
-	private final int MAZE_HEIGHT = 18;
-	private final float SHUFFLE_TIME = 2f;
+	private final int MAZE_WIDTH = 64;
+	private final int MAZE_HEIGHT = 36;
+	private final float SHUFFLE_TIME = 0f;
 
 	private SpriteBatch spriteBatch;
 	private Maze maze;
@@ -59,7 +59,7 @@ public class Main extends ApplicationAdapter {
 	}
 
 	private void createNewMaze() {
-		initMazeSystem(new Maze(MAZE_WIDTH, MAZE_HEIGHT, DFSolver::new));
+		initMazeSystem(new Maze(MAZE_WIDTH, MAZE_HEIGHT, BFSolver::new));
 	}
 
 	private void initMazeSystem(Maze maze) {
@@ -90,7 +90,7 @@ public class Main extends ApplicationAdapter {
 
 		float deltaTime = Gdx.graphics.getDeltaTime();
 		if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-			deltaTime /= 20;
+			deltaTime /= 60;
 		}
 
 		if (!mazeShuffler.done()) {
