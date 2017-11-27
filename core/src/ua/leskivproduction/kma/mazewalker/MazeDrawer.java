@@ -1,8 +1,11 @@
 package ua.leskivproduction.kma.mazewalker;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import static java.lang.Math.abs;
 import static java.lang.Math.max;
 
 import java.util.List;
@@ -15,6 +18,7 @@ public final class MazeDrawer {
     private float x, y, width, height;
     private ShapeRenderer shapeRenderer;
     private Color[][] actualColors;
+    private OrthographicCamera camera;
 
     public MazeDrawer(Maze maze) {
         this.maze = maze;
@@ -25,6 +29,8 @@ public final class MazeDrawer {
                 actualColors[i][j] = new Color(maze.getColor(i, j));
             }
         }
+        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.translate(camera.viewportWidth/2, camera.viewportHeight/2);
     }
 
     public void setMaze(Maze maze) {
@@ -35,7 +41,35 @@ public final class MazeDrawer {
             throw new IllegalArgumentException("New maze must have same size!");
     }
 
+    private float goalZoom = 1;
+
+    public void zoomOut() {
+        goalZoom = 2;
+    }
+
+    public void zoomIn() {
+        goalZoom = 0.5f;
+    }
+
+    public void normalZoom() {
+        goalZoom = 1;
+    }
+
     public void draw(float deltaTime) {
+
+        if (abs(camera.zoom - goalZoom) < 0.001)
+            camera.zoom = goalZoom;
+        else if (camera.zoom < goalZoom)
+            camera.zoom = lerp(camera.zoom, 1.1f*goalZoom, deltaTime/5);
+        else
+            camera.zoom = lerp(camera.zoom, 0.95f*goalZoom, 3*deltaTime);
+
+        if (abs(camera.zoom - goalZoom) < 0.001)
+            camera.zoom = goalZoom;
+
+        camera.update();
+        shapeRenderer.setProjectionMatrix(camera.combined);
+
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(new Color(0.2f, 0.8f, 0.1f, 1));
 

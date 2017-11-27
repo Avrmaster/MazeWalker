@@ -93,13 +93,15 @@ public final class Maze {
     }
 
     public void addMarker(int cellX, int cellY, Color color, boolean important) {
-        addMarker(cellX, cellY, color, 1, important);
+        addMarker(cellX, cellY, color, 1, important, true);
     }
 
-    public void addMarker(int cellX, int cellY, Color color, float radius, boolean important) {
+    public void addMarker(int cellX, int cellY, Color color, float radius, boolean important, boolean fromSmall) {
         removeAllMarkersAt(cellX, cellY);
         Marker newMarker = new Marker(cellX, cellY);
         newMarker.goalRadius = radius;
+        if (!fromSmall)
+            newMarker.radius = radius;
         newMarker.color = color;
         newMarker.removable = !important;
         markers.add(newMarker);

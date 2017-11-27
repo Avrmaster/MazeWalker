@@ -7,7 +7,6 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.*;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import ua.leskivproduction.kma.mazewalker.model.Maze;
@@ -16,144 +15,186 @@ import ua.leskivproduction.kma.mazewalker.solvers.DFSolver;
 import ua.leskivproduction.kma.mazewalker.utils.DummyInputProcessor;
 
 public class Main extends ApplicationAdapter {
-	private final int MAZE_WIDTH = 64;
-	private final int MAZE_HEIGHT = 36;
-	private final float SHUFFLE_TIME = 2f;
+    private final int MAZE_WIDTH = 128;
+    private final int MAZE_HEIGHT = 72;
+    private final float SHUFFLE_TIME = 2f;
+    private final boolean AUTO_EPIC = true;
 
-	private SpriteBatch spriteBatch;
-	private Maze maze;
-	private MazeDrawer mazeDrawer;
-	private MazeShuffler mazeShuffler;
-	private BitmapFont mainFont;
+    private SpriteBatch spriteBatch;
+    private Maze maze;
+    private MazeDrawer mazeDrawer;
+    private MazeShuffler mazeShuffler;
+    private BitmapFont mainFont;
 
-	private Music backgroundMusic;
+    private Music epicMusic, backgroundMusic;
+    private final float BACKGROUND_VOLUME = 3f;
 
-	@Override
-	public void create () {
-		spriteBatch = new SpriteBatch();
-		mainFont = genFont("American Captain.ttf", Gdx.graphics.getHeight()/10, Color.WHITE);
-		createNewMaze();
+    @Override
+    public void create() {
+        spriteBatch = new SpriteBatch();
+        mainFont = genFont("American Captain.ttf", Gdx.graphics.getHeight() / 10, Color.WHITE);
 
-		backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("AssassinsCreed.mp3"));
+        Texture karp = new Texture("karp.jpg");
+        TextureData textureData = karp.getTextureData();
+        if (!textureData.isPrepared()) {
+            textureData.prepare();
+        }
+        originalEpicPixmap = textureData.consumePixmap();
 
-		Gdx.input.setInputProcessor(new DummyInputProcessor() {
-			@Override
-			public boolean keyDown(int keycode) {
-				switch (keycode) {
-					case Input.Keys.N:
-						createNewMaze();
-						break;
-					case Input.Keys.O:
-						if (mazeShuffler.done())
-							mazeShuffler.newObjective();
-						break;
-					case Input.Keys.B:
-						if (maze.hasObjective()) {
-							maze.solveWith(BFSolver::new);
-						}
-						break;
-					case Input.Keys.D:
-						if (maze.hasObjective()) {
-							maze.solveWith(DFSolver::new);
-						}
-						break;
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("background.mp3"));
+        backgroundMusic.setVolume(BACKGROUND_VOLUME);
+        epicMusic = Gdx.audio.newMusic(Gdx.files.internal("AssassinsCreed.mp3"));
 
-					case Input.Keys.K:
-						Texture karp = new Texture("karp.jpg");
-						TextureData textureData = karp.getTextureData();
-						if (!textureData.isPrepared()) {
-							textureData.prepare();
-						}
-						Pixmap originalPixmap = textureData.consumePixmap();
-						Pixmap pixmap = new Pixmap(maze.width, maze.height, originalPixmap.getFormat());
-						pixmap.setBlending(Pixmap.Blending.None);
-						pixmap.drawPixmap(originalPixmap, 0, 0,
-								originalPixmap.getWidth(), originalPixmap.getHeight(), 0,0 ,
-								maze.width, maze.height);
+        Gdx.input.setInputProcessor(new DummyInputProcessor() {
+            @Override
+            public boolean keyDown(int keycode) {
+                switch (keycode) {
+                    case Input.Keys.N:
+                        if (!isEpic)
+                            createNewMaze();
+                        break;
+                    case Input.Keys.O:
+                        if (mazeShuffler.done())
+                            mazeShuffler.newObjective();
+                        break;
+                    case Input.Keys.B:
+                        if (maze.hasObjective()) {
+                            maze.solveWith(BFSolver::new);
+                        }
+                        break;
+                    case Input.Keys.D:
+                        if (maze.hasObjective()) {
+                            maze.solveWith(DFSolver::new);
+                        }
+                        break;
 
-						for (int i = 0; i < pixmap.getWidth(); i++)
-							for (int j = 0; j < pixmap.getHeight(); j++)
-								maze.setColor(i, j, new Color(pixmap.getPixel(i, maze.height-1-j)));
-						break;
-				}
-				return true;
-			}
-		});
+                    case Input.Keys.K:
+                        if (mazeShuffler.done())
+                            toggleEpic();
+                        break;
+                }
+                return true;
+            }
+        });
+        createNewMaze();
+    }
 
-	}
+    private boolean isEpic = false;
+    private Pixmap originalEpicPixmap; //not resized
+    private Pixmap epicPixmap;
 
-	private BitmapFont genFont(String file, double size, Color color) {
-		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(file));
-		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-		parameter.size = (int)size;
-		parameter.color = color;
-		BitmapFont font = generator.generateFont(parameter);
-		generator.dispose();
-		return font;
-	}
+    public void toggleEpic() {
+        if (isEpic) {
+            mazeDrawer.normalZoom();
+            maze.clearCellsColors();
+            epicMusic.stop();
+            backgroundMusic.setVolume(BACKGROUND_VOLUME);
+            isEpic = false;
+            return;
+        }
 
-	private void createNewMaze() {
-		initMazeSystem(new Maze(MAZE_WIDTH, MAZE_HEIGHT, BFSolver::new));
-	}
+        mazeDrawer.zoomOut();
 
-	private void initMazeSystem(Maze maze) {
-		this.maze = maze;
-		mazeShuffler = new MazeShuffler(maze, SHUFFLE_TIME, false);
+        for (int i = 0; i < epicPixmap.getWidth(); i++)
+            for (int j = 0; j < epicPixmap.getHeight(); j++)
+                maze.setColor(i, j, new Color(epicPixmap.getPixel(i, maze.height - 1 - j)));
 
-		try {
-			mazeDrawer.setMaze(maze);
-		} catch (IllegalArgumentException | NullPointerException e) {
-			mazeDrawer = new MazeDrawer(maze);
-			int screenWidth = Gdx.graphics.getWidth();
-			int screenHeight = Gdx.graphics.getHeight();
+        backgroundMusic.setVolume(0);
+        epicMusic.play();
+        epicMusic.setPosition(3);
+        isEpic = true;
+    }
 
-			float yOffset = mainFont.getCapHeight()+3;
-			float xOffset = yOffset*screenWidth/screenHeight;
+    private BitmapFont genFont(String file, double size, Color color) {
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(file));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.size = (int) size;
+        parameter.color = color;
+        BitmapFont font = generator.generateFont(parameter);
+        generator.dispose();
+        return font;
+    }
 
-			mazeDrawer.setX(xOffset).setY(yOffset).setWidth(screenWidth-2*xOffset).setHeight(screenHeight-2*yOffset);
-		}
-	}
+    private void createNewMaze() {
+        initMazeSystem(new Maze(MAZE_WIDTH, MAZE_HEIGHT, BFSolver::new));
+    }
 
-	@Override
-	public void render () {
-		Gdx.gl.glClearColor(0, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+    private void initMazeSystem(Maze maze) {
+        this.maze = maze;
+        mazeShuffler = new MazeShuffler(maze, SHUFFLE_TIME, false);
 
-		Gdx.gl.glEnable(GL20.GL_BLEND);
-		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        epicPixmap = new Pixmap(maze.width, maze.height, originalEpicPixmap.getFormat());
+        epicPixmap.setBlending(Pixmap.Blending.None);
+        epicPixmap.drawPixmap(originalEpicPixmap,
+                0, 0, originalEpicPixmap.getWidth(), originalEpicPixmap.getHeight(),
+                0, 0, maze.width, maze.height);
 
-		if (!backgroundMusic.isPlaying())
-			backgroundMusic.play();
+        try {
+            mazeDrawer.setMaze(maze);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            mazeDrawer = new MazeDrawer(maze);
+            int screenWidth = Gdx.graphics.getWidth();
+            int screenHeight = Gdx.graphics.getHeight();
 
-		float deltaTime = Gdx.graphics.getDeltaTime();
-		if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-			deltaTime /= 60;
-		}
+            float yOffset = mainFont.getCapHeight() + 3;
+            float xOffset = yOffset * screenWidth / screenHeight;
 
-		if (!mazeShuffler.done()) {
-			mazeShuffler.update(deltaTime);
-		} else {
-			if (maze.hasObjective() &&
-					(!maze.solver.done() || !(maze.solver.isSolutionDrawn()))) {
-				maze.solver.update(deltaTime);
-			}
-		}
+            mazeDrawer.setX(xOffset).setY(yOffset).setWidth(screenWidth - 2 * xOffset).setHeight(screenHeight - 2 * yOffset);
+        }
+    }
 
-		mazeDrawer.draw(Gdx.graphics.getDeltaTime());
+    boolean epic_toggled = false;
 
-		spriteBatch.begin();
-		if (maze.hasObjective() && maze.solver.done()) {
+    @Override
+    public void render() {
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-			if (maze.solver.solvable()) {
-				mainFont.draw(spriteBatch, "Path length ( "+maze.solver.getClass().getSimpleName()+"): "
-								+ maze.solver.getSolution().size(),
-						0, mainFont.getCapHeight());
-			} else {
-				mainFont.draw(spriteBatch, "Not solvable!", 0, mainFont.getCapHeight());
-			}
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-		}
-		spriteBatch.end();
-	}
+        if (!backgroundMusic.isPlaying())
+            backgroundMusic.play();
+
+        float deltaTime = Gdx.graphics.getDeltaTime();
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+            deltaTime /= 60;
+        }
+
+        if (!mazeShuffler.done()) {
+            mazeShuffler.update(deltaTime);
+        } else {
+            if (maze.hasObjective()) {
+                if (!maze.solver.done() || !(maze.solver.isSolutionDrawn())) {
+                    maze.solver.update(deltaTime);
+                }
+                if (maze.solver.done()) {
+                    if (!epic_toggled) {
+                        if (AUTO_EPIC)
+                            toggleEpic();
+                        epic_toggled = true;
+                    }
+                } else epic_toggled = false;
+            }
+        }
+
+        mazeDrawer.draw(Gdx.graphics.getDeltaTime());
+
+        spriteBatch.begin();
+        if (maze.hasObjective() && maze.solver.done())
+
+        {
+
+            if (maze.solver.solvable()) {
+                mainFont.draw(spriteBatch, "Path length ( " + maze.solver.getClass().getSimpleName() + "): "
+                                + maze.solver.getSolution().size(),
+                        0, mainFont.getCapHeight());
+            } else {
+                mainFont.draw(spriteBatch, "Not solvable!", 0, mainFont.getCapHeight());
+            }
+
+        }
+        spriteBatch.end();
+    }
 
 }

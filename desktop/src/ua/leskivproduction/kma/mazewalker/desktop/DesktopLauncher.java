@@ -15,8 +15,12 @@ public class DesktopLauncher {
 		config.useGL30 = true;
 		config.useHDPI = true;
 
-		config.width = screenSize.width*3/4;
-		config.height = screenSize.height*3/4;
+//		config.width = screenSize.width*3/4;
+//		config.height = screenSize.height*3/4;
+
+		config.width = screenSize.width;
+		config.height = screenSize.height;
+		config.fullscreen = true;
 
 		new LwjglApplication(new Main(), config);
 	}

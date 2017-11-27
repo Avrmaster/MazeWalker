@@ -10,7 +10,7 @@ import java.awt.Point;
 
 public abstract class MazeSolver {
     protected final static float STEP_TIME = 0.003f;
-    private final static float SOLUTION_DRAW_TIME = 1;
+    private final static float SOLUTION_DRAW_TIME = 3;
 
     protected Maze maze;
     public MazeSolver(Maze maze) {
@@ -24,8 +24,6 @@ public abstract class MazeSolver {
 
         visited = new boolean[mazeGraph.V];
         paths = new int[mazeGraph.V];
-
-        maze.clearCellsColors();
     }
 
     protected boolean solvable = true;
@@ -63,9 +61,10 @@ public abstract class MazeSolver {
             else
                 doneByNow = (int)(solution.size()*solutionDrawProgress/SOLUTION_DRAW_TIME);
 
-            for (; drawnPart < doneByNow; drawnPart++) {
+            int added = 0;
+            for (; drawnPart < doneByNow && added < 70; drawnPart++, added++) {
                 Point p = solution.get(drawnPart);
-                maze.addMarker(p.x, p.y, Color.BLUE, 0.5f, true);
+                maze.addMarker(p.x, p.y, Color.BLUE, 0.5f, true, false);
             }
 
             if (drawnPart >= solution.size()) {
@@ -86,7 +85,7 @@ public abstract class MazeSolver {
 
         if (!visited[currentV]) {
             if (!pos.equals(objective.startPoint) && !pos.equals(objective.endPoint))
-                maze.addMarker(pos.x, pos.y, Color.CHARTREUSE, 0.4f, false);
+                maze.addMarker(pos.x, pos.y, Color.CHARTREUSE, 0.4f, false, true);
             visited[currentV] = true;
         }
 
@@ -113,8 +112,6 @@ public abstract class MazeSolver {
                 else
                     break;
             }
-
-            maze.setColor(10, 10, Color.ORANGE);
 
         }
 
